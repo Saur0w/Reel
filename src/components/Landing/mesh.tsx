@@ -21,11 +21,12 @@ const images: ImageProps[] = [
     { src: '/images/rock7.jpg' },
     { src: '/images/rock8.jpg' },
     { src: '/images/rock9.jpg' },
-    { src: '/images/rock10.jpg' }
+    { src: '/images/rock10.jpg' },
+    { src: '/images/rock11.jpg' },
 ];
 
-const PLANE_WIDTH = 3;
-const PLANE_HEIGHT = 2;
+const PLANE_WIDTH = 2.5;
+const PLANE_HEIGHT = 1.5;
 const GAP = 0.05;
 
 function Meshes() {
@@ -37,26 +38,29 @@ function Meshes() {
 
     const uniformsList = useMemo(() => {
         return textures.map((texture) => ({
-            uTexture: { value: texture },
-            uTime: { value: 0 },
-            uVelocity: { value: 0 },
+            uTexture:   { value: texture },
+            uVelocity:  { value: 0 },
         }));
     }, [textures]);
 
     useFrame((state) => {
         const diff = targetX.current - scrollX.current;
         // eslint-disable-next-line react-hooks/immutability
-        scrollX.current += diff * 0.08;
+        scrollX.current += diff * 0.1;
         // eslint-disable-next-line react-hooks/immutability
         velocity.current = diff;
 
         if (groupRef.current) {
             groupRef.current.position.x = scrollX.current * 0.005;
         }
+
         materialsRef.current.forEach((mat) => {
             if (mat) {
-                mat.uniforms.uTime.value = state.clock.elapsedTime;
-                mat.uniforms.uVelocity.value = velocity.current;
+                mat.uniforms.uVelocity.value = THREE.MathUtils.lerp(
+                    mat.uniforms.uVelocity.value,
+                    velocity.current,
+                    0.1
+                );
             }
         });
     });
