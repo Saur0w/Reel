@@ -43,7 +43,7 @@ function Meshes() {
         }));
     }, [textures]);
 
-    useFrame((state) => {
+    useFrame(() => {
         const diff = targetX.current - scrollX.current;
         // eslint-disable-next-line react-hooks/immutability
         scrollX.current += diff * 0.1;
