@@ -5,6 +5,8 @@ import * as THREE from "three";
 import { vertexShader, fragmentShader } from "@/lib/shader";
 import {Suspense, useMemo, useRef} from "react";
 import { useFrame } from "@react-three/fiber";
+import { useScroll } from "@/hooks/useScroll";
+
 interface ImageProps {
     src: string;
 }
@@ -14,6 +16,12 @@ const images: ImageProps[] = [
     { src: '/images/rock2.jpg' },
     { src: '/images/rock3.jpg' },
     { src: '/images/rock4.jpg' },
+    { src: '/images/rock5.jpg' },
+    { src: '/images/rock6.jpg' },
+    { src: '/images/rock7.jpg' },
+    { src: '/images/rock8.jpg' },
+    { src: '/images/rock9.jpg' },
+    { src: '/images/rock10.jpg' }
 ];
 
 const PLANE_WIDTH = 3;
@@ -23,25 +31,38 @@ const GAP = 0.05;
 function Meshes() {
     const textures = useTexture(images.map(img => img.src)) as THREE.Texture[];
     const materialsRef = useRef<(THREE.ShaderMaterial | null)[]>([]);
+    const groupRef      = useRef<THREE.Group>(null!);
+
+    const { scrollX, targetX, velocity } = useScroll();
 
     const uniformsList = useMemo(() => {
         return textures.map((texture) => ({
             uTexture: { value: texture },
             uTime: { value: 0 },
-            uScroll: { value: 0 },
+            uVelocity: { value: 0 },
         }));
     }, [textures]);
 
     useFrame((state) => {
+        const diff = targetX.current - scrollX.current;
+        // eslint-disable-next-line react-hooks/immutability
+        scrollX.current += diff * 0.08;
+        // eslint-disable-next-line react-hooks/immutability
+        velocity.current = diff;
+
+        if (groupRef.current) {
+            groupRef.current.position.x = scrollX.current * 0.005;
+        }
         materialsRef.current.forEach((mat) => {
             if (mat) {
                 mat.uniforms.uTime.value = state.clock.elapsedTime;
+                mat.uniforms.uVelocity.value = velocity.current;
             }
         });
     });
 
     return (
-        <group>
+        <group ref={groupRef}>
             {textures.map((_, index) => (
                 <mesh
                     key={index}
