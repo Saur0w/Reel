@@ -1,52 +1,69 @@
 "use client";
 
-import React, { useRef, useMemo } from "react";
-import { useFrame, useLoader } from "@react-three/fiber";
+import  { useTexture } from "@react-three/drei";
 import * as THREE from "three";
-import { TextureLoader } from "three";
-import { vertexShader, fragmentShader } from './shaders';
-
-interface MeshProps {
-    url: string;
-    index: number;
-    width: number;
-    height: number;
-    gap: number;
-    scrollVelocity: React.RefObject<number>;
+import { vertexShader, fragmentShader } from "@/lib/shader";
+import {Suspense, useMemo, useRef} from "react";
+import { useFrame } from "@react-three/fiber";
+interface ImageProps {
+    src: string;
 }
 
-export function Mesh({ url, index, width, height, gap, scrollVelocity }: MeshProps) {
-    const meshRef = useRef<THREE.Mesh>(null);
-    const texture = useLoader(TextureLoader, url);
-    const timeRef = useRef(0);
+const images: ImageProps[] = [
+    { src: '/images/rock.jpg' },
+    { src: '/images/rock2.jpg' },
+    { src: '/images/rock3.jpg' },
+    { src: '/images/rock4.jpg' },
+];
 
-    const uniforms = useMemo(() => ({
-        uTexture:        { value: texture },
-        uScrollVelocity: { value: 0 },
-        uTime:           { value: 0 },
-    }), [texture]);
+const PLANE_WIDTH = 3;
+const PLANE_HEIGHT = 2;
+const GAP = 0.05;
 
-    useFrame((_, delta) => {
-        timeRef.current += delta;
-        // eslint-disable-next-line react-hooks/immutability
-        uniforms.uScrollVelocity.value = THREE.MathUtils.lerp(
-            uniforms.uScrollVelocity.value,
-            scrollVelocity.current * 0.01,
-            0.1
-        );
-        uniforms.uTime.value = timeRef.current;
+function Meshes() {
+    const textures = useTexture(images.map(img => img.src)) as THREE.Texture[];
+    const materialsRef = useRef<(THREE.ShaderMaterial | null)[]>([]);
+
+    const uniformsList = useMemo(() => {
+        return textures.map((texture) => ({
+            uTexture: { value: texture },
+            uTime: { value: 0 },
+            uScroll: { value: 0 },
+        }));
+    }, [textures]);
+
+    useFrame((state) => {
+        materialsRef.current.forEach((mat) => {
+            if (mat) {
+                mat.uniforms.uTime.value = state.clock.elapsedTime;
+            }
+        });
     });
 
-    const xPos = index * (width + gap);
-
     return (
-        <mesh ref={meshRef} position={[xPos, 0, 0]}>
-            <planeGeometry args={[width, height, 30, 30]} />
-            <shaderMaterial
-                vertexShader={vertexShader}
-                fragmentShader={fragmentShader}
-                uniforms={uniforms}
-            />
-        </mesh>
+        <group>
+            {textures.map((_, index) => (
+                <mesh
+                    key={index}
+                    position={[index * (PLANE_WIDTH + GAP), 0, 0]}
+                >
+                    <planeGeometry args={[PLANE_WIDTH, PLANE_HEIGHT, 30, 30]} />
+                    <shaderMaterial
+                        ref={(el) => (materialsRef.current[index] = el)}
+                        vertexShader={vertexShader}
+                        fragmentShader={fragmentShader}
+                        uniforms={uniformsList[index]}
+                    />
+                </mesh>
+            ))}
+        </group>
     )
+}
+
+export default function Mesh() {
+    return (
+       <Suspense fallback={null}>
+           <Meshes />
+       </Suspense>
+    );
 }
