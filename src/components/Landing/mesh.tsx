@@ -12,17 +12,24 @@ interface ImageProps {
 }
 
 const images: ImageProps[] = [
+    { src: '/images/kali.png' },
+    { src: '/images/p.jpg' },
     { src: '/images/rock.jpg' },
     { src: '/images/rock2.jpg' },
-    { src: '/images/rock3.jpg' },
-    { src: '/images/rock4.jpg' },
+    { src: '/images/1.jpg' },
+    { src: '/images/2.jpg' },
+    { src: '/images/house.jpg' },
+    { src: '/images/bird.jpg' },
+    { src: '/images/neck.jpg' },
     { src: '/images/rock5.jpg' },
-    { src: '/images/rock6.jpg' },
+    { src: '/images/fog.jpg' },
     { src: '/images/rock7.jpg' },
-    { src: '/images/rock8.jpg' },
-    { src: '/images/rock9.jpg' },
+    { src: '/images/road.jpg' },
+    { src: '/images/ref.jpg' },
+    { src: '/images/butterfly.jpg' },
+    { src: '/images/canada.jpg' },
     { src: '/images/rock10.jpg' },
-    { src: '/images/rock11.jpg' },
+    { src: '/images/12.jpg' },
 ];
 
 const PLANE_WIDTH = 2.5;
